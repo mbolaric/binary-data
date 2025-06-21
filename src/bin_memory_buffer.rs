@@ -2,27 +2,33 @@ use std::{fmt::Debug, io::Read};
 
 use crate::{bin_error::Result, BinSeek};
 
+/// The ByteOrder trait defines methods for reading various sizes of unsigned integers
+/// with respect to the byte order (big-endian or little-endian).
 pub trait ByteOrder: Default + Debug + Clone {
     fn read_u16(buf: &[u8]) -> Result<u16>;
     fn read_u24(buf: &[u8]) -> Result<u32>;
     fn read_u32(buf: &[u8]) -> Result<u32>;
 }
 
+/// BigEndian is a marker struct for big-endian byte order.
 #[derive(Clone, Copy, Debug)]
 pub enum BigEndian {}
 
 impl Default for BigEndian {
+    /// This panics as the default is not meant to be used for BigEndian.
     fn default() -> BigEndian {
         panic!("BigEndian")
     }
 }
 
 impl ByteOrder for BigEndian {
+    /// Reads a 16-bit unsigned integer from a big-endian buffer
     #[inline]
     fn read_u16(buf: &[u8]) -> Result<u16> {
         Ok(u16::from_be_bytes(buf[..2].try_into()?))
     }
 
+    /// Reads a 24-bit unsigned integer from a big-endian buffer
     #[inline]
     fn read_u24(buf: &[u8]) -> Result<u32> {
         let mut out = [0; 4];
@@ -30,27 +36,32 @@ impl ByteOrder for BigEndian {
         Ok(u32::from_be_bytes(out))
     }
 
+    /// Reads a 32-bit unsigned integer from a big-endian buffer
     #[inline]
     fn read_u32(buf: &[u8]) -> Result<u32> {
         Ok(u32::from_be_bytes(buf[..4].try_into()?))
     }
 }
 
+/// LittleEndian is a marker struct for little-endian byte order.
 #[derive(Clone, Copy, Debug)]
 pub enum LittleEndian {}
 
 impl Default for LittleEndian {
+    /// This panics as the default is not meant to be used for LittleEndian.
     fn default() -> LittleEndian {
         panic!("LittleEndian")
     }
 }
 
 impl ByteOrder for LittleEndian {
+    /// Reads a 16-bit unsigned integer from a little-endian buffer
     #[inline]
     fn read_u16(buf: &[u8]) -> Result<u16> {
         Ok(u16::from_le_bytes(buf[..2].try_into()?))
     }
 
+    /// Reads a 24-bit unsigned integer from a little-endian buffer
     #[inline]
     fn read_u24(buf: &[u8]) -> Result<u32> {
         let mut out = [0; 4];
@@ -58,13 +69,16 @@ impl ByteOrder for LittleEndian {
         Ok(u32::from_le_bytes(out))
     }
 
+    /// Reads a 32-bit unsigned integer from a little-endian buffer
     #[inline]
     fn read_u32(buf: &[u8]) -> Result<u32> {
         Ok(u32::from_le_bytes(buf[..4].try_into()?))
     }
 }
 
+/// The ReadBytes trait adds additional methods for reading specific types of data from a byte stream.
 pub trait ReadBytes: Read {
+    /// Reads a single byte from the stream
     #[inline]
     fn read_u8(&mut self) -> Result<u8> {
         let mut buf: [u8; 1] = [0; 1];
@@ -72,6 +86,7 @@ pub trait ReadBytes: Read {
         Ok(buf[0])
     }
 
+    /// Reads a 16-bit unsigned integer from the stream using the specified byte order.
     #[inline]
     fn read_u16<T: ByteOrder>(&mut self) -> Result<u16> {
         let mut buf: [u8; 2] = [0; 2];
@@ -79,6 +94,7 @@ pub trait ReadBytes: Read {
         T::read_u16(&buf)
     }
 
+    /// Reads a 24-bit unsigned integer from the stream using the specified byte order.
     #[inline]
     fn read_u24<T: ByteOrder>(&mut self) -> Result<u32> {
         let mut buf = [0; 3];
@@ -86,6 +102,7 @@ pub trait ReadBytes: Read {
         T::read_u24(&buf)
     }
 
+    /// Reads a 32-bit unsigned integer from the stream using the specified byte order.
     #[inline]
     fn read_u32<T: ByteOrder>(&mut self) -> Result<u32> {
         let mut buffer: [u8; 4] = [0; 4];
@@ -93,6 +110,7 @@ pub trait ReadBytes: Read {
         T::read_u32(&buffer)
     }
 
+    /// Reads exactly `N` bytes from the stream into a fixed-size array.
     #[inline]
     fn read_bytes<const N: usize>(&mut self) -> Result<[u8; N]> {
         let mut buffer: [u8; N] = [0; N];
@@ -100,6 +118,7 @@ pub trait ReadBytes: Read {
         Ok(buffer)
     }
 
+    /// Reads exactly `length` bytes from the stream into a `Vec<u8>`.
     #[inline]
     fn read_into_vec(&mut self, length: u32) -> Result<Vec<u8>> {
         let mut buffer: Vec<u8> = vec![0; length as usize];
@@ -109,8 +128,10 @@ pub trait ReadBytes: Read {
     }
 }
 
+/// Implement the ReadBytes trait for all types that implement the `Read` trait.
 impl<R: Read + ?Sized> ReadBytes for R {}
 
+/// BinMemoryBuffer is a custom buffer that allows reading from a memory buffer with a position pointer.
 #[derive(Default)]
 pub struct BinMemoryBuffer {
     buffer: Vec<u8>,
@@ -125,12 +146,14 @@ impl BinMemoryBuffer {
         }
     }
 
+    /// Returns a slice of the remaining data in the buffer, starting from the current position
     pub fn remaining_slice(&self) -> &[u8] {
         let start_pos = self.position.min(self.buffer.len());
         &self.buffer.as_slice()[(start_pos)..]
     }
 }
 
+/// Implement the `BinSeek` trait for `BinMemoryBuffer` to support seeking, getting the current position, and the buffer length.
 impl BinSeek for BinMemoryBuffer {
     fn seek(&mut self, to: usize) -> Result<usize> {
         self.position = to;
@@ -146,6 +169,7 @@ impl BinSeek for BinMemoryBuffer {
     }
 }
 
+/// Implement the `Read` trait for `BinMemoryBuffer` to allow reading from it just like a file.
 impl Read for BinMemoryBuffer {
     fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
         let len = Read::read(&mut self.remaining_slice(), buffer)?;
@@ -161,6 +185,7 @@ impl Read for BinMemoryBuffer {
     }
 }
 
+/// Allows conversion from a `Vec<u8>` to a `BinMemoryBuffer`
 impl From<Vec<u8>> for BinMemoryBuffer {
     fn from(buffer: Vec<u8>) -> Self {
         BinMemoryBuffer {
@@ -170,6 +195,7 @@ impl From<Vec<u8>> for BinMemoryBuffer {
     }
 }
 
+/// Allows conversion from a byte slice (`&[u8]`) to a `BinMemoryBuffer`
 impl From<&[u8]> for BinMemoryBuffer {
     fn from(buffer: &[u8]) -> Self {
         BinMemoryBuffer {

@@ -2,6 +2,7 @@ use std::io::Read;
 
 use crate::bin_error::Result;
 
+/// Define a trait for seeking in binary files
 pub trait BinSeek {
     fn seek(&mut self, to: usize) -> Result<usize>;
     fn pos(&mut self) -> Result<usize>;
@@ -11,4 +12,5 @@ pub trait BinSeek {
     }
 }
 
+/// Define a trait for reading and seeking in binary files
 pub trait BinRead: Read + BinSeek {}
