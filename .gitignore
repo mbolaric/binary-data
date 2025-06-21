@@ -1,0 +1,7 @@
+/target
+/.idea/
+/esm/examples/data/
+.DS_Store
+doc/US20090185789A1.pdf
+Thumbs.db
+test.tiff
