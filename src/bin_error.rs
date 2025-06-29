@@ -6,6 +6,7 @@ use std::{array::TryFromSliceError, io};
 pub enum Error {
     InvalidInputArray,
     File(io::Error),
+    NotSupported,
 }
 
 impl fmt::Display for Error {
@@ -14,6 +15,7 @@ impl fmt::Display for Error {
         match self {
             InvalidInputArray => f.write_str("conversion from array to slice fails"),
             File(err) => f.write_str(err.to_string().as_str()),
+            NotSupported => f.write_str("Operation are not supported."),
         }
     }
 }
