@@ -39,11 +39,6 @@ impl BinRingMemoryBuffer {
         }
         self.position = new_pos;
     }
-
-    /// Checks if the current position is at the end of the buffer
-    pub fn is_eob(&mut self) -> Result<bool> {
-        Ok(self.position >= self.len()?)
-    }
 }
 
 /// Implement the `BinSeek` trait for `BinRingMemoryBuffer` to support seeking, getting the current position, and the buffer length.
