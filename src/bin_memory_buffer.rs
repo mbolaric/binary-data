@@ -24,7 +24,7 @@ impl BinMemoryBuffer {
     }
 
     /// Checks if the current position is at the end of the buffer
-    pub fn is_eob(&self) -> Result<bool> {
+    pub fn is_eob(&mut self) -> Result<bool> {
         Ok(self.position >= self.len()?)
     }
 }
