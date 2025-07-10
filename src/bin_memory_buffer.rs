@@ -22,6 +22,11 @@ impl BinMemoryBuffer {
         let start_pos = self.position.min(self.buffer.len());
         &self.buffer.as_slice()[(start_pos)..]
     }
+
+    /// Checks if the current position is at the end of the buffer
+    pub fn is_eob(&self) -> Result<bool> {
+        Ok(self.position >= self.len()?)
+    }
 }
 
 /// Implement the `BinSeek` trait for `BinMemoryBuffer` to support seeking, getting the current position, and the buffer length.
