@@ -10,6 +10,10 @@ pub trait BinSeek {
     fn is_empty(&self) -> bool {
         self.len().unwrap_or(0) > 0
     }
+    /// Return true if we are at the end of the buffer/file.
+    fn is_eof(&mut self) -> bool {
+        self.pos().unwrap_or(0) >= self.len().unwrap_or(0)
+    }
 }
 
 /// Define a trait for reading and seeking in binary files
