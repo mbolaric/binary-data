@@ -54,6 +54,10 @@ impl BinSeek for BinRingMemoryBuffer {
     fn len(&self) -> Result<usize> {
         Ok(self.buffer.len())
     }
+    /// Return true only if buffer is empty becouse that is ring buffer.
+    fn is_eof(&mut self) -> bool {
+        self.len().unwrap_or(0) == 0
+    }
 }
 
 /// Implement the `Read` trait for `BinRingMemoryBuffer` to allow reading from it just like a file.
