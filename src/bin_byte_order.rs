@@ -1,5 +1,8 @@
 use crate::bin_error::Result;
-use std::{fmt::Debug, io::Read};
+use std::{
+    fmt::Debug,
+    io::{Read, Write},
+};
 
 /// The ByteOrder trait defines methods for reading various sizes of unsigned integers
 /// with respect to the byte order (big-endian or little-endian).
@@ -126,6 +129,8 @@ pub trait ReadBytes: Read {
         Ok(buffer)
     }
 }
+
+pub trait WriteBytes: Write {}
 
 /// Implement the ReadBytes trait for all types that implement the `Read` trait.
 impl<R: Read + ?Sized> ReadBytes for R {}
