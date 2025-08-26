@@ -1,9 +1,9 @@
-use std::io::Read;
+use std::io::{Read, Write};
 
 use crate::{bin_error::Result, BinSeek, Error};
 
 /// BinRingMemoryBuffer is a custom circular buffer that allows reading from a memory buffer with a position pointer.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct BinRingMemoryBuffer {
     buffer: Vec<u8>,
     position: usize,
@@ -30,6 +30,30 @@ impl BinRingMemoryBuffer {
             *item = self.read_byte();
         }
         buffer.len()
+    }
+
+    fn write_byte(&mut self, byte: u8) -> std::io::Result<usize> {
+        if self.buffer.is_empty() {
+            return Ok(0);
+        }
+        self.buffer[self.position] = byte;
+        self.next();
+        Ok(1)
+    }
+
+    fn write_bytes(&mut self, buffer: &[u8]) -> std::io::Result<usize> {
+        if self.buffer.is_empty() {
+            return Ok(0);
+        }
+        let mut ret_count: usize = 0;
+        for byte in buffer {
+            if self.position >= self.buffer.len() {
+                self.position = 0;
+            }
+            ret_count += self.write_byte(*byte)?;
+        }
+
+        Ok(ret_count)
     }
 
     fn next(&mut self) {
@@ -69,6 +93,17 @@ impl Read for BinRingMemoryBuffer {
 
     fn read_exact(&mut self, buffer: &mut [u8]) -> std::io::Result<()> {
         self.read_bytes(buffer);
+        Ok(())
+    }
+}
+
+// Implementing the `Write` trait for `BinRingMemoryBuffer`, allowing it to be write like any other `Write` type
+impl Write for BinRingMemoryBuffer {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.write_bytes(buf)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
     }
 }

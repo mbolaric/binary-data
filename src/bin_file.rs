@@ -1,6 +1,6 @@
 use std::{
     fs::{File, Metadata},
-    io::{Read, Seek, SeekFrom},
+    io::{Read, Seek, SeekFrom, Write},
 };
 
 use crate::{
@@ -70,12 +70,29 @@ impl BinFile {
     pub fn is_eof(&mut self) -> Result<bool> {
         Ok(self.file.stream_position()? >= self.metadata.len())
     }
+
+    /// Write `buffer.len()` bytes from the `buffer` into file
+    pub fn write_bytes(&mut self, buffer: &[u8]) -> Result<()> {
+        self.file.write_all(buffer)?;
+        Ok(())
+    }
 }
 
 // Implementing the `Read` trait for `BinFile`, allowing it to be read like any other `Read` type
 impl Read for BinFile {
     fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
         self.file.read(buffer)
+    }
+}
+
+// Implementing the `Write` trait for `BinFile`, allowing it to be write like any other `Write` type
+impl Write for BinFile {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.file.write(buf)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.file.flush()
     }
 }
 

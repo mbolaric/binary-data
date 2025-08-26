@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::io::{Read, Write};
 
 use crate::{bin_error::Result, BinSeek};
 
@@ -52,6 +52,27 @@ impl Read for BinMemoryBuffer {
         let buf_len = buffer.len();
         Read::read_exact(&mut self.remaining_slice(), buffer)?;
         self.position += buf_len;
+        Ok(())
+    }
+}
+
+// Implementing the `Write` trait for `BinMemoryBuffer`, allowing it to be write like any other `Write` type
+impl Write for BinMemoryBuffer {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let bytes_to_end = self.buffer.len() - self.position;
+        if buf.len() > bytes_to_end {
+            let bytes_out_of_buffer = buf.len() - bytes_to_end;
+            self.buffer
+                .resize(self.buffer.len() + bytes_out_of_buffer, 0);
+        }
+
+        self.buffer[self.position..(self.position + buf.len())].clone_from_slice(buf);
+        self.position += buf.len();
+
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
     }
 }

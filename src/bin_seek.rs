@@ -1,5 +1,3 @@
-use std::io::Read;
-
 use crate::bin_error::Result;
 
 /// Define a trait for seeking in binary files
@@ -15,6 +13,3 @@ pub trait BinSeek {
         self.pos().unwrap_or(0) >= self.len().unwrap_or(0)
     }
 }
-
-/// Define a trait for reading and seeking in binary files
-pub trait BinRead: Read + BinSeek {}
