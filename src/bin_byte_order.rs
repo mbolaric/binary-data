@@ -130,7 +130,10 @@ pub trait ReadBytes: Read {
     }
 }
 
-pub trait WriteBytes: Write {}
-
 /// Implement the ReadBytes trait for all types that implement the `Read` trait.
 impl<R: Read + ?Sized> ReadBytes for R {}
+
+/// The WriteBytes trait adds additional methods for writing specific types of data into a byte stream.
+pub trait WriteBytes: Write {}
+/// Implement the WriteBytes trait for all types that implement the `Write` trait.
+impl<W: Write + ?Sized> WriteBytes for W {}
