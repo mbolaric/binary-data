@@ -10,6 +10,10 @@ pub trait ByteOrder: Default + Debug + Clone {
     fn read_u16(buf: &[u8]) -> Result<u16>;
     fn read_u24(buf: &[u8]) -> Result<u32>;
     fn read_u32(buf: &[u8]) -> Result<u32>;
+
+    fn write_u16(value: u16) -> Result<[u8; 2]>;
+    fn write_u24(value: u32) -> Result<[u8; 3]>;
+    fn write_u32(value: u32) -> Result<[u8; 4]>;
 }
 
 /// BigEndian is a marker struct for big-endian byte order.
@@ -43,6 +47,27 @@ impl ByteOrder for BigEndian {
     fn read_u32(buf: &[u8]) -> Result<u32> {
         Ok(u32::from_be_bytes(buf[..4].try_into()?))
     }
+
+    /// Write a 16-bit unsigned integer to a big-endian buffer
+    #[inline]
+    fn write_u16(value: u16) -> Result<[u8; 2]> {
+        Ok(u16::to_be_bytes(value))
+    }
+
+    /// Reads a 24-bit unsigned integer to a big-endian buffer
+    #[inline]
+    fn write_u24(value: u32) -> Result<[u8; 3]> {
+        let mut buf: [u8; 3] = [0; 3];
+        let out = u32::to_be_bytes(value);
+        buf.copy_from_slice(&out[1..]);
+        Ok(buf)
+    }
+
+    /// Write a 32-bit unsigned integer to a big-endian buffer
+    #[inline]
+    fn write_u32(value: u32) -> Result<[u8; 4]> {
+        Ok(u32::to_be_bytes(value))
+    }
 }
 
 /// LittleEndian is a marker struct for little-endian byte order.
@@ -75,6 +100,27 @@ impl ByteOrder for LittleEndian {
     #[inline]
     fn read_u32(buf: &[u8]) -> Result<u32> {
         Ok(u32::from_le_bytes(buf[..4].try_into()?))
+    }
+
+    /// Write a 16-bit unsigned integer to a little-endian buffer
+    #[inline]
+    fn write_u16(value: u16) -> Result<[u8; 2]> {
+        Ok(u16::to_le_bytes(value))
+    }
+
+    /// Reads a 24-bit unsigned integer to a little-endian buffer
+    #[inline]
+    fn write_u24(value: u32) -> Result<[u8; 3]> {
+        let mut buf: [u8; 3] = [0; 3];
+        let out = u32::to_le_bytes(value);
+        buf.copy_from_slice(&out[..3]);
+        Ok(buf)
+    }
+
+    /// Write a 32-bit unsigned integer to a little-endian buffer
+    #[inline]
+    fn write_u32(value: u32) -> Result<[u8; 4]> {
+        Ok(u32::to_le_bytes(value))
     }
 }
 
@@ -134,6 +180,35 @@ pub trait ReadBytes: Read {
 impl<R: Read + ?Sized> ReadBytes for R {}
 
 /// The WriteBytes trait adds additional methods for writing specific types of data into a byte stream.
-pub trait WriteBytes: Write {}
+pub trait WriteBytes: Write {
+    /// Write a single byte to the stream
+    #[inline]
+    fn write_u8(&mut self, value: u8) -> Result<usize> {
+        let buf = [value];
+        Ok(self.write(&buf)?)
+    }
+
+    /// Write a 16-bit unsigned integer to the stream using the specified byte order.
+    #[inline]
+    fn write_u16<T: ByteOrder>(&mut self, value: u16) -> Result<usize> {
+        let buf = T::write_u16(value)?;
+        Ok(self.write(&buf)?)
+    }
+
+    /// Write a 24-bit unsigned integer to the stream using the specified byte order.
+    #[inline]
+    fn write_u24<T: ByteOrder>(&mut self, value: u32) -> Result<usize> {
+        let buf = T::write_u24(value)?;
+        Ok(self.write(&buf)?)
+    }
+
+    /// Write a 32-bit unsigned integer to the stream using the specified byte order.
+    #[inline]
+    fn write_u32<T: ByteOrder>(&mut self, value: u32) -> Result<usize> {
+        let buf = T::write_u32(value)?;
+        Ok(self.write(&buf)?)
+    }
+}
+
 /// Implement the WriteBytes trait for all types that implement the `Write` trait.
 impl<W: Write + ?Sized> WriteBytes for W {}

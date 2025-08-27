@@ -3,7 +3,7 @@ use std::io::{Read, Write};
 use crate::{bin_error::Result, BinSeek};
 
 /// BinMemoryBuffer is a custom buffer that allows reading from a memory buffer with a position pointer.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct BinMemoryBuffer {
     buffer: Vec<u8>,
     position: usize,
