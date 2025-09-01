@@ -22,6 +22,11 @@ impl BinMemoryBuffer {
         let start_pos = self.position.min(self.buffer.len());
         &self.buffer.as_slice()[(start_pos)..]
     }
+
+    /// Returns a slice of the data in the buffer, starting from the 0 position
+    pub fn as_slice(&self) -> &[u8] {
+        &self.buffer
+    }
 }
 
 /// Implement the `BinSeek` trait for `BinMemoryBuffer` to support seeking, getting the current position, and the buffer length.
