@@ -1,6 +1,6 @@
 # Reading/Writing binary data
-A fast and flexible Rust crate for reading and writing binary data from files or memory.
 
+A fast and flexible Rust crate for reading and writing binary data from files or memory.
 
 [![Build Status][actions-badge]][actions-url]
 
@@ -8,6 +8,7 @@ A fast and flexible Rust crate for reading and writing binary data from files or
 [actions-url]: https://github.com/mbolaric/binary-data/actions/workflows/rust.yml?query=branch%3Amaster
 
 # Usage
+
 ```rust
 use binary_data::{BinFile, BinReader, BinWriter, BinSeek, WriteBytes, BigEndian};
 
@@ -34,4 +35,41 @@ match BinWriter::create("./test.ddd") {
     Err(error) => println!("{:?}", error),
 }
 ...
+```
+
+# Bit-level Reading
+
+For more granular control, you can use the `BitReader` to read data at the bit level. The `BitReader` wraps any reader that implements `Read` and `BinSeek`.
+
+```rust
+use binary_data::{BinMemoryBuffer, BitReader};
+
+// Create a buffer with some data
+let data = vec![0b10110011, 0b01010101, 0b11110000];
+let mem_buffer = BinMemoryBuffer::from(data);
+
+// Create a BitReader
+let mut bit_reader = BitReader::new(mem_buffer);
+
+// Read the first bit
+let bit = bit_reader.read_bit().unwrap();
+println!("First bit: {}", bit); // Expected: 1
+
+// Read the next 4 bits
+let four_bits = bit_reader.read_bits(4).unwrap();
+println!("Next 4 bits: {}", four_bits); // Expected: 6 (0110)
+
+// Seek to bit position 14 and read 3 bits
+bit_reader.seek_bits(14).unwrap();
+let three_bits = bit_reader.read_bits(3).unwrap();
+println!("3 bits at position 14: {}", three_bits); // Expected: 3 (011)
+
+// Read a single bit at position 23 without moving the reader
+let bit_at_23 = bit_reader.read_bit_at(23).unwrap();
+println!("Bit at position 23: {}", bit_at_23); // Expected: 0
+
+// Read a single bit as a u8
+bit_reader.seek_bits(0).unwrap();
+let bit_as_u8: u8 = bit_reader.read_bit_as().unwrap();
+println!("Bit as u8: {}", bit_as_u8); // Expected: 1
 ```

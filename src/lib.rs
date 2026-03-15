@@ -1,3 +1,4 @@
+mod bin_bit_reader;
 mod bin_byte_order;
 mod bin_error;
 mod bin_file;
@@ -7,6 +8,7 @@ mod bin_ring_memory_buffer;
 mod bin_seek;
 mod bin_writer;
 
+pub use bin_bit_reader::BitReader;
 pub use bin_byte_order::*;
 pub use bin_error::{Error, Result};
 pub use bin_file::BinFile;
