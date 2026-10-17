@@ -1,10 +1,22 @@
 [package]
 name = "binary-data"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Milan Bolaric"]
 edition = "2021"
-
-keywords = ["binary", "data", "file", "read"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/mbolaric/binary-data"
+description = "A fast and flexible Rust crate for reading and writing binary data from files or memory."
+keywords = ["binary", "data", "file", "read", "write"]
+categories = ["encoding", "parsing"]
+include = [
+    "/src/**/*",
+    "/examples/**/*.rs",
+    "/tests/**/*.rs",
+    "/Cargo.toml",
+    "/README.md",
+    "/LICENSE",
+]
 
 [profile.release]
 strip = true
