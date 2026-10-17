@@ -1,6 +1,6 @@
 [package]
 name = "binary-data"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Milan Bolaric"]
 edition = "2021"
 readme = "README.md"
@@ -28,7 +28,7 @@ panic = 'abort'
 log = { version = "0.4.17", features = ["max_level_debug", "release_max_level_warn"], optional = true }
 
 [dev-dependencies]
-log4rs = "1.4.0"
+log4rs = { version = "1.4.0", default-features = false, features = ["console_appender"] }
 clap = { version = "4.6.3", features = ["derive"] }
 
 [features]
