@@ -42,9 +42,10 @@ impl<R: Read + BinSeek> BitReader<R> {
     #[inline]
     fn fill_buf(&mut self) -> Result<()> {
         if self.pos < self.cap {
-            // If the buffer wasn't fully consumed, we must seek the underlying 
+            // If the buffer wasn't fully consumed, we must seek the underlying
             // reader back to our logical position before refilling.
-            self.reader.seek((self.buffer_start + self.pos as u64) as usize)?;
+            self.reader
+                .seek((self.buffer_start + self.pos as u64) as usize)?;
         }
         self.buffer_start = self.reader.pos()? as u64;
         self.cap = self.reader.read(&mut self.buffer)?;
